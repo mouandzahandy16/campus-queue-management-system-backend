@@ -3,21 +3,27 @@ package com.auca.campusqueue.service;
 import com.auca.campusqueue.model.QueueTicket;
 import com.auca.campusqueue.model.TicketStatus;
 import com.auca.campusqueue.repository.QueueTicketRepository;
+import com.auca.campusqueue.repository.ServiceLogRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
 public class QueueTicketService {
 
     private final QueueTicketRepository queueTicketRepository;
+    private final ServiceLogRepository serviceLogRepository;
 
-    public QueueTicketService(QueueTicketRepository queueTicketRepository) {
+    public QueueTicketService(QueueTicketRepository queueTicketRepository, ServiceLogRepository serviceLogRepository) {
         this.queueTicketRepository = queueTicketRepository;
+        this.serviceLogRepository = serviceLogRepository;
     }
 
     public List<QueueTicket> getAllTickets() {
@@ -74,6 +80,28 @@ public class QueueTicketService {
 
     public void deleteTicket(UUID id) {
         QueueTicket ticket = getTicketById(id);
+        if (serviceLogRepository.existsByQueueTicket(ticket)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete ticket that has associated service logs");
+        }
         queueTicketRepository.delete(ticket);
+    }
+
+    public Map<String, Long> getStatusReportForDate(LocalDate date) {
+        List<Object[]> rows = queueTicketRepository.countTicketsByStatusForDate(date);
+        Map<String, Long> report = new LinkedHashMap<>();
+        for (TicketStatus status : TicketStatus.values()) {
+            report.put(status.name(), 0L);
+        }
+        for (Object[] row : rows) {
+            TicketStatus status = (TicketStatus) row[0];
+            Long count = (Long) row[1];
+            report.put(status.name(), count);
+        }
+        return report;
+    }
+
+    @Transactional
+    public int bulkCancelUnservedTickets(LocalDate date) {
+        return queueTicketRepository.bulkCancelUnservedTicketsForDate(date);
     }
 }
