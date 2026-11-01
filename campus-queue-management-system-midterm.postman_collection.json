@@ -1,0 +1,264 @@
+{
+	"info": {
+		"_postman_id": "c1f7a28e-8904-4b5c-a5b6-68b209d73284",
+		"name": "campus-queue-management-system-midterm",
+		"description": "Postman Collection for Campus Queue Management System Backend Midterm Exam - Student: MOUANDZA Handy Christopher (27284)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Part A - CRUD",
+			"item": [
+				{
+					"name": "A2 - Save CampusService (201)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Student Affairs\"\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/campus-services/save", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "campus-services", "save"]}
+					}
+				},
+				{
+					"name": "A2 - Get All CampusServices (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/campus-services/all", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "campus-services", "all"]}
+					}
+				},
+				{
+					"name": "A2 - Save Counter (201)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"counterNumber\": 5,\n    \"name\": \"Counter 5\"\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/counters/save", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "counters", "save"]}
+					}
+				},
+				{
+					"name": "A2 - Get All Counters (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/counters/all", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "counters", "all"]}
+					}
+				},
+				{
+					"name": "A2 - Save StaffMember (201)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Daniel\",\n    \"lastName\": \"Mugabo\",\n    \"email\": \"daniel.mugabo@auca.ac.rw\"\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/staff-members/save", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "staff-members", "save"]}
+					}
+				},
+				{
+					"name": "A2 - Get All StaffMembers (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/staff-members/all", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "staff-members", "all"]}
+					}
+				},
+				{
+					"name": "A2 - Save Student (201)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Jean\",\n    \"lastName\": \"Kayitesi\",\n    \"regNumber\": \"27290\",\n    \"email\": \"jean.kayitesi@auca.ac.rw\",\n    \"phone\": \"+250788999000\"\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/students/save", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "students", "save"]}
+					}
+				},
+				{
+					"name": "A2 - Get All Students (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/students/all", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "students", "all"]}
+					}
+				},
+				{
+					"name": "A2 - Get Student By Unknown ID (404 Error Demo)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/students/00000000-0000-0000-0000-000000000000", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "students", "00000000-0000-0000-0000-000000000000"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Part B - Derived Queries",
+			"item": [
+				{
+					"name": "B1 - Find students by lastName (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/students/by-last-name?lastName=mouandza", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "students", "by-last-name"], "query": [{"key": "lastName", "value": "mouandza"}]}
+					}
+				},
+				{
+					"name": "B2 - Queue tickets by status (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/by-status?status=WAITING", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "by-status"], "query": [{"key": "status", "value": "WAITING"}]}
+					}
+				},
+				{
+					"name": "B3 - Queue tickets in date range (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/between?start=2026-10-01&end=2026-10-31", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "between"], "query": [{"key": "start", "value": "2026-10-01"}, {"key": "end", "value": "2026-10-31"}]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Part C - JPQL with Joins",
+			"item": [
+				{
+					"name": "C1 - Staff members by campus service (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/staff-members/by-campus-service?name=finance", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "staff-members", "by-campus-service"], "query": [{"key": "name", "value": "finance"}]}
+					}
+				},
+				{
+					"name": "C2 - Free counters (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/counters/free", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "counters", "free"]}
+					}
+				},
+				{
+					"name": "C3 - Campus services nobody holds (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/campus-services/unused", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "campus-services", "unused"]}
+					}
+				},
+				{
+					"name": "C4 - Students of a staff member - Error 404 Demo",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/students/of-staff-member/00000000-0000-0000-0000-000000000000", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "students", "of-staff-member", "00000000-0000-0000-0000-000000000000"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Part D - Business Rules",
+			"item": [
+				{
+					"name": "D1 - Safe saving - Past Date Error (400 Demo)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ticketDate\": \"2020-01-01\",\n    \"ticketNumber\": \"T-PAST\"\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/save", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "save"]}
+					}
+				},
+				{
+					"name": "D2 - Status flow - Invalid move (400 Demo)",
+					"request": {
+						"method": "PATCH",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/00000000-0000-0000-0000-000000000000/status?status=CALLED", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "00000000-0000-0000-0000-000000000000", "status"], "query": [{"key": "status", "value": "CALLED"}]}
+					}
+				},
+				{
+					"name": "D3 - Add campus service - Error 404 Demo",
+					"request": {
+						"method": "PUT",
+						"url": {"raw": "http://localhost:8080/api/staff-members/00000000-0000-0000-0000-000000000000/campus-services/00000000-0000-0000-0000-000000000000", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "staff-members", "00000000-0000-0000-0000-000000000000", "campus-services", "00000000-0000-0000-0000-000000000000"]}
+					}
+				},
+				{
+					"name": "D4 - Move staff to counter - Taken Counter (409 Demo)",
+					"request": {
+						"method": "PATCH",
+						"url": {"raw": "http://localhost:8080/api/staff-members/00000000-0000-0000-0000-000000000000/counter?counterNumber=1", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "staff-members", "00000000-0000-0000-0000-000000000000", "counter"], "query": [{"key": "counterNumber", "value": "1"}]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Part E - ServiceLog Entity",
+			"item": [
+				{
+					"name": "E1 - Write service log - Non-existent ticket (404 Demo)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actionTaken\": \"Fee statement printed\",\n    \"remarks\": \"Student advised on balance\",\n    \"minutesSpent\": 7\n}"
+						},
+						"url": {"raw": "http://localhost:8080/api/service-logs/save?queueTicketId=00000000-0000-0000-0000-000000000000", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "service-logs", "save"], "query": [{"key": "queueTicketId", "value": "00000000-0000-0000-0000-000000000000"}]}
+					}
+				},
+				{
+					"name": "E2 - Service log history of a student (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/service-logs/student/27284", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "service-logs", "student", "27284"]}
+					}
+				},
+				{
+					"name": "E3 - Delete service log - 404 Demo",
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "http://localhost:8080/api/service-logs/delete/00000000-0000-0000-0000-000000000000", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "service-logs", "delete", "00000000-0000-0000-0000-000000000000"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Part F - Reports & Bulk Updates",
+			"item": [
+				{
+					"name": "F1 - Queue tickets per status (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/stats/by-status", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "stats", "by-status"]}
+					}
+				},
+				{
+					"name": "F2 - Staff member is absent - cancel day (200)",
+					"request": {
+						"method": "PATCH",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/cancel-day?staffMemberId=00000000-0000-0000-0000-000000000000&date=2026-10-20", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "cancel-day"], "query": [{"key": "staffMemberId", "value": "00000000-0000-0000-0000-000000000000"}, {"key": "date", "value": "2026-10-20"}]}
+					}
+				}
+			]
+		},
+		{
+			"name": "Bonus (+10 marks)",
+			"item": [
+				{
+					"name": "+5 Bonus 1 - Dashboard summary (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/dashboard/summary", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "dashboard", "summary"]}
+					}
+				},
+				{
+					"name": "+5 Bonus 2 - Queue tickets page by page (200)",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/api/queue-tickets/page?page=0&size=5&sort=ticketDate,desc", "protocol": "http", "host": ["localhost"], "port": "8080", "path": ["api", "queue-tickets", "page"], "query": [{"key": "page", "value": "0"}, {"key": "size", "value": "5"}, {"key": "sort", "value": "ticketDate,desc"}]}
+					}
+				}
+			]
+		}
+	]
+}
