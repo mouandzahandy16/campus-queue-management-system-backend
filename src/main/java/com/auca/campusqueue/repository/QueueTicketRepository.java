@@ -16,18 +16,20 @@ import java.util.UUID;
 @Repository
 public interface QueueTicketRepository extends JpaRepository<QueueTicket, UUID> {
 
-    List<QueueTicket> findByCampusServiceIdAndTicketDateOrderByTicketNumberAsc(UUID campusServiceId, LocalDate ticketDate);
+    List<QueueTicket> findByStatusOrderByTicketDateAsc(TicketStatus status);
 
-    List<QueueTicket> findByStudentIdAndTicketDateBetween(UUID studentId, LocalDate startDate, LocalDate endDate);
-
-    List<QueueTicket> findByTicketDateAndStatus(LocalDate ticketDate, TicketStatus status);
+    List<QueueTicket> findByTicketDateBetweenOrderByTicketDateAsc(LocalDate start, LocalDate end);
 
     boolean existsByStaffMemberAndTicketDateAndStatusNot(StaffMember staffMember, LocalDate ticketDate, TicketStatus status);
 
-    @Query("SELECT q.status, COUNT(q) FROM QueueTicket q WHERE q.ticketDate = :date GROUP BY q.status")
-    List<Object[]> countTicketsByStatusForDate(@Param("date") LocalDate date);
+    @Query("SELECT q.status, COUNT(q) FROM QueueTicket q GROUP BY q.status")
+    List<Object[]> countTicketsByStatus();
 
     @Modifying
-    @Query("UPDATE QueueTicket q SET q.status = 'SKIPPED' WHERE q.ticketDate = :date AND q.status IN ('WAITING', 'IN_PROGRESS')")
-    int bulkCancelUnservedTicketsForDate(@Param("date") LocalDate date);
+    @Query("UPDATE QueueTicket q SET q.status = com.auca.campusqueue.model.TicketStatus.SKIPPED WHERE q.staffMember.id = :staffMemberId AND q.ticketDate = :date AND q.status != com.auca.campusqueue.model.TicketStatus.SERVED")
+    int cancelDayTickets(@Param("staffMemberId") UUID staffMemberId, @Param("date") LocalDate date);
+
+    long countByTicketDate(LocalDate ticketDate);
+
+    long countByStatus(TicketStatus status);
 }

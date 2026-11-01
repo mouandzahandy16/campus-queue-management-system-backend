@@ -6,11 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface CounterRepository extends JpaRepository<Counter, UUID> {
 
-    @Query("SELECT c FROM Counter c WHERE NOT EXISTS (SELECT s FROM StaffMember s WHERE s.counter = c)")
-    List<Counter> findUnassignedCounters();
+    @Query("SELECT c FROM Counter c WHERE NOT EXISTS (SELECT s FROM StaffMember s WHERE s.counter = c) ORDER BY c.counterNumber ASC")
+    List<Counter> findFreeCounters();
+
+    Optional<Counter> findByCounterNumber(int counterNumber);
 }

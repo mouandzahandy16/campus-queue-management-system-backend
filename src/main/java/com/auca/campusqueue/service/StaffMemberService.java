@@ -6,11 +6,10 @@ import com.auca.campusqueue.model.StaffMember;
 import com.auca.campusqueue.repository.CampusServiceRepository;
 import com.auca.campusqueue.repository.CounterRepository;
 import com.auca.campusqueue.repository.StaffMemberRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -28,48 +27,88 @@ public class StaffMemberService {
         this.counterRepository = counterRepository;
     }
 
-    public List<StaffMember> getAllStaffMembers() {
+    public String save(StaffMember staffMember) {
+        staffMemberRepository.save(staffMember);
+        return "Staff member saved successfully";
+    }
+
+    public List<StaffMember> getAll() {
         return staffMemberRepository.findAll();
     }
 
-    public StaffMember getStaffMemberById(UUID id) {
-        return staffMemberRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Staff member not found"));
+    public Optional<StaffMember> getById(UUID id) {
+        return staffMemberRepository.findById(id);
     }
 
-    public StaffMember createStaffMember(StaffMember staffMember) {
-        return staffMemberRepository.save(staffMember);
-    }
-
-    public StaffMember assignService(UUID staffId, UUID serviceId) {
-        StaffMember staff = getStaffMemberById(staffId);
-        CampusService service = campusServiceRepository.findById(serviceId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
-
-        if (!staff.getCampusServices().contains(service)) {
-            staff.getCampusServices().add(service);
+    public String update(UUID id, StaffMember updatedStaff) {
+        Optional<StaffMember> existing = staffMemberRepository.findById(id);
+        if (existing.isEmpty()) {
+            return "The staff member with that id does not exist";
         }
-        return staffMemberRepository.save(staff);
+        StaffMember staff = existing.get();
+        staff.setFirstName(updatedStaff.getFirstName());
+        staff.setLastName(updatedStaff.getLastName());
+        staff.setEmail(updatedStaff.getEmail());
+        staff.setCounter(updatedStaff.getCounter());
+        staff.setCampusServices(updatedStaff.getCampusServices());
+        staffMemberRepository.save(staff);
+        return "Staff member updated successfully";
     }
 
-    public StaffMember assignCounter(UUID staffId, UUID counterId) {
-        StaffMember staff = getStaffMemberById(staffId);
-        Counter counter = counterRepository.findById(counterId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Counter not found"));
+    public String delete(UUID id) {
+        Optional<StaffMember> existing = staffMemberRepository.findById(id);
+        if (existing.isEmpty()) {
+            return "The staff member with that id does not exist";
+        }
+        staffMemberRepository.delete(existing.get());
+        return "Staff member deleted successfully";
+    }
 
-        List<StaffMember> allStaff = staffMemberRepository.findAll();
-        for (StaffMember other : allStaff) {
-            if (!other.getId().equals(staffId) && other.getCounter() != null && other.getCounter().getId().equals(counterId)) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Counter is already assigned to another staff member");
+    public List<StaffMember> getByCampusService(String name) {
+        return staffMemberRepository.findByCampusServiceNameIgnoreCase(name);
+    }
+
+    public String addCampusService(UUID staffMemberId, UUID campusServiceId) {
+        Optional<StaffMember> staffOpt = staffMemberRepository.findById(staffMemberId);
+        if (staffOpt.isEmpty()) {
+            return "The staff member with that id does not exist";
+        }
+        Optional<CampusService> serviceOpt = campusServiceRepository.findById(campusServiceId);
+        if (serviceOpt.isEmpty()) {
+            return "That campus service does not exist";
+        }
+        StaffMember staff = staffOpt.get();
+        CampusService service = serviceOpt.get();
+
+        if (staff.getCampusServices().contains(service)) {
+            return "The staff member already has that campus service";
+        }
+
+        staff.getCampusServices().add(service);
+        staffMemberRepository.save(staff);
+        return "Campus service added to the staff member";
+    }
+
+    public String changeCounter(UUID staffMemberId, int counterNumber) {
+        Optional<StaffMember> staffOpt = staffMemberRepository.findById(staffMemberId);
+        if (staffOpt.isEmpty()) {
+            return "The staff member with that id does not exist";
+        }
+        Optional<Counter> counterOpt = counterRepository.findByCounterNumber(counterNumber);
+        if (counterOpt.isEmpty()) {
+            return "The counter with that counterNumber does not exist";
+        }
+        Counter counter = counterOpt.get();
+        StaffMember staff = staffOpt.get();
+
+        if (staffMemberRepository.existsByCounter(counter)) {
+            if (staff.getCounter() == null || !staff.getCounter().getId().equals(counter.getId())) {
+                return "That counter is taken by another staff member";
             }
         }
 
         staff.setCounter(counter);
-        return staffMemberRepository.save(staff);
-    }
-
-    public void deleteStaffMember(UUID id) {
-        StaffMember staff = getStaffMemberById(id);
-        staffMemberRepository.delete(staff);
+        staffMemberRepository.save(staff);
+        return "Counter changed successfully";
     }
 }

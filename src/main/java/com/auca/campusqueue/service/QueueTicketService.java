@@ -4,15 +4,14 @@ import com.auca.campusqueue.model.QueueTicket;
 import com.auca.campusqueue.model.TicketStatus;
 import com.auca.campusqueue.repository.QueueTicketRepository;
 import com.auca.campusqueue.repository.ServiceLogRepository;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,87 +20,111 @@ public class QueueTicketService {
     private final QueueTicketRepository queueTicketRepository;
     private final ServiceLogRepository serviceLogRepository;
 
-    public QueueTicketService(QueueTicketRepository queueTicketRepository, ServiceLogRepository serviceLogRepository) {
+    public QueueTicketService(QueueTicketRepository queueTicketRepository,
+                              ServiceLogRepository serviceLogRepository) {
         this.queueTicketRepository = queueTicketRepository;
         this.serviceLogRepository = serviceLogRepository;
     }
 
-    public List<QueueTicket> getAllTickets() {
-        return queueTicketRepository.findAll();
-    }
-
-    public QueueTicket getTicketById(UUID id) {
-        return queueTicketRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found"));
-    }
-
-    public QueueTicket createTicket(QueueTicket ticket) {
-        if (ticket.getTicketDate() != null && ticket.getTicketDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket date cannot be in the past");
+    public String save(QueueTicket queueTicket) {
+        if (queueTicket.getTicketDate() == null || queueTicket.getTicketDate().isBefore(LocalDate.now())) {
+            return "Queue ticket date cannot be in the past";
         }
 
-        if (ticket.getStaffMember() != null && ticket.getTicketDate() != null) {
+        if (queueTicket.getStaffMember() != null && queueTicket.getStaffMember().getId() != null) {
             boolean hasActiveTicket = queueTicketRepository.existsByStaffMemberAndTicketDateAndStatusNot(
-                    ticket.getStaffMember(),
-                    ticket.getTicketDate(),
-                    TicketStatus.SERVED
+                    queueTicket.getStaffMember(),
+                    queueTicket.getTicketDate(),
+                    TicketStatus.SKIPPED
             );
             if (hasActiveTicket) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Staff member already has an active ticket for this date");
+                return "Staff member already has a ticket on that date";
             }
         }
 
-        if (ticket.getStatus() == null) {
-            ticket.setStatus(TicketStatus.WAITING);
-        }
-
-        return queueTicketRepository.save(ticket);
+        queueTicket.setStatus(TicketStatus.WAITING);
+        queueTicketRepository.save(queueTicket);
+        return "Queue ticket saved successfully";
     }
 
-    public QueueTicket updateTicketStatus(UUID id, TicketStatus newStatus) {
-        QueueTicket ticket = getTicketById(id);
-        TicketStatus currentStatus = ticket.getStatus();
+    public List<QueueTicket> getAll() {
+        return queueTicketRepository.findAll();
+    }
 
-        if (currentStatus == TicketStatus.SERVED || currentStatus == TicketStatus.SKIPPED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot change status of a finalized ticket");
+    public Optional<QueueTicket> getById(UUID id) {
+        return queueTicketRepository.findById(id);
+    }
+
+    public String update(UUID id, QueueTicket updatedTicket) {
+        Optional<QueueTicket> existing = queueTicketRepository.findById(id);
+        if (existing.isEmpty()) {
+            return "The queue ticket with that id does not exist";
+        }
+        QueueTicket ticket = existing.get();
+        ticket.setTicketDate(updatedTicket.getTicketDate());
+        ticket.setTicketNumber(updatedTicket.getTicketNumber());
+        ticket.setStudent(updatedTicket.getStudent());
+        ticket.setStaffMember(updatedTicket.getStaffMember());
+        queueTicketRepository.save(ticket);
+        return "Queue ticket updated successfully";
+    }
+
+    public String delete(UUID id) {
+        Optional<QueueTicket> existing = queueTicketRepository.findById(id);
+        if (existing.isEmpty()) {
+            return "The queue ticket with that id does not exist";
+        }
+        QueueTicket ticket = existing.get();
+        if (serviceLogRepository.existsByQueueTicket(ticket)) {
+            return "That queue ticket has service logs, delete them first";
+        }
+        queueTicketRepository.delete(ticket);
+        return "Queue ticket deleted successfully";
+    }
+
+    public List<QueueTicket> getByStatus(TicketStatus status) {
+        return queueTicketRepository.findByStatusOrderByTicketDateAsc(status);
+    }
+
+    public List<QueueTicket> getBetweenDates(LocalDate start, LocalDate end) {
+        return queueTicketRepository.findByTicketDateBetweenOrderByTicketDateAsc(start, end);
+    }
+
+    public String updateStatus(UUID id, TicketStatus newStatus) {
+        Optional<QueueTicket> existing = queueTicketRepository.findById(id);
+        if (existing.isEmpty()) {
+            return "The queue ticket with that id does not exist";
+        }
+        QueueTicket ticket = existing.get();
+        TicketStatus current = ticket.getStatus();
+
+        boolean allowed = false;
+        if (current == TicketStatus.WAITING && (newStatus == TicketStatus.CALLED || newStatus == TicketStatus.SKIPPED)) {
+            allowed = true;
+        } else if (current == TicketStatus.CALLED && (newStatus == TicketStatus.SERVED || newStatus == TicketStatus.SKIPPED)) {
+            allowed = true;
         }
 
-        if (currentStatus == TicketStatus.WAITING && newStatus != TicketStatus.IN_PROGRESS && newStatus != TicketStatus.SKIPPED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status transition from WAITING");
-        }
-
-        if (currentStatus == TicketStatus.IN_PROGRESS && newStatus != TicketStatus.SERVED && newStatus != TicketStatus.SKIPPED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid status transition from IN_PROGRESS");
+        if (!allowed) {
+            return "Cannot change status from " + current + " to " + newStatus;
         }
 
         ticket.setStatus(newStatus);
-        return queueTicketRepository.save(ticket);
+        queueTicketRepository.save(ticket);
+        return "Queue ticket status updated successfully";
     }
 
-    public void deleteTicket(UUID id) {
-        QueueTicket ticket = getTicketById(id);
-        if (serviceLogRepository.existsByQueueTicket(ticket)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot delete ticket that has associated service logs");
-        }
-        queueTicketRepository.delete(ticket);
-    }
-
-    public Map<String, Long> getStatusReportForDate(LocalDate date) {
-        List<Object[]> rows = queueTicketRepository.countTicketsByStatusForDate(date);
-        Map<String, Long> report = new LinkedHashMap<>();
-        for (TicketStatus status : TicketStatus.values()) {
-            report.put(status.name(), 0L);
-        }
-        for (Object[] row : rows) {
-            TicketStatus status = (TicketStatus) row[0];
-            Long count = (Long) row[1];
-            report.put(status.name(), count);
-        }
-        return report;
+    public List<Object[]> getStatsByStatus() {
+        return queueTicketRepository.countTicketsByStatus();
     }
 
     @Transactional
-    public int bulkCancelUnservedTickets(LocalDate date) {
-        return queueTicketRepository.bulkCancelUnservedTicketsForDate(date);
+    public String cancelDay(UUID staffMemberId, LocalDate date) {
+        int count = queueTicketRepository.cancelDayTickets(staffMemberId, date);
+        return count + " queue tickets cancelled";
+    }
+
+    public Page<QueueTicket> getPage(Pageable pageable) {
+        return queueTicketRepository.findAll(pageable);
     }
 }

@@ -15,17 +15,20 @@ public class DataInitializer implements CommandLineRunner {
     private final StaffMemberRepository staffMemberRepository;
     private final StudentRepository studentRepository;
     private final QueueTicketRepository queueTicketRepository;
+    private final ServiceLogRepository serviceLogRepository;
 
     public DataInitializer(CampusServiceRepository campusServiceRepository,
                            CounterRepository counterRepository,
                            StaffMemberRepository staffMemberRepository,
                            StudentRepository studentRepository,
-                           QueueTicketRepository queueTicketRepository) {
+                           QueueTicketRepository queueTicketRepository,
+                           ServiceLogRepository serviceLogRepository) {
         this.campusServiceRepository = campusServiceRepository;
         this.counterRepository = counterRepository;
         this.staffMemberRepository = staffMemberRepository;
         this.studentRepository = studentRepository;
         this.queueTicketRepository = queueTicketRepository;
+        this.serviceLogRepository = serviceLogRepository;
     }
 
     @Override
@@ -68,13 +71,18 @@ public class DataInitializer implements CommandLineRunner {
 
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 20), TicketStatus.SKIPPED, "T-101", st1, s1));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 20), TicketStatus.WAITING, "T-102", st2, s1));
-        queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 22), TicketStatus.SERVED, "T-103", st1, s2));
-        queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 25), TicketStatus.SERVED, "T-104", st3, s3));
+
+        QueueTicket t3 = queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 22), TicketStatus.SERVED, "T-103", st1, s2));
+        QueueTicket t4 = queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 25), TicketStatus.SERVED, "T-104", st3, s3));
+
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 28), TicketStatus.CALLED, "T-105", st1, s1));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 10, 30), TicketStatus.WAITING, "T-106", st4, s2));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 11, 2), TicketStatus.WAITING, "T-107", st5, s3));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 11, 5), TicketStatus.CALLED, "T-108", st2, s1));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 11, 8), TicketStatus.SKIPPED, "T-109", st3, s2));
         queueTicketRepository.save(new QueueTicket(LocalDate.of(2026, 11, 10), TicketStatus.WAITING, "T-110", st1, s3));
+
+        serviceLogRepository.save(new ServiceLog("Registration cleared", "Student registered for Semester 1", 10, LocalDate.of(2026, 10, 22), t3));
+        serviceLogRepository.save(new ServiceLog("Fee statement printed", "Student advised on balance", 7, LocalDate.of(2026, 10, 25), t4));
     }
 }

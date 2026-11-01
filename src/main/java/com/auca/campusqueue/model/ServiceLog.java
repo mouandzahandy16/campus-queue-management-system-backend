@@ -1,34 +1,42 @@
 package com.auca.campusqueue.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "service_logs")
+@Table(name = "service_log")
 public class ServiceLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "queue_ticket_id", nullable = false)
-    private QueueTicket queueTicket;
+    @Column(nullable = false)
+    private String actionTaken;
 
     @Column(nullable = false)
-    private LocalDateTime loggedAt;
+    private String remarks;
 
-    @Column(length = 1000)
-    private String notes;
+    @Column(nullable = false)
+    private int minutesSpent;
+
+    @Column(nullable = false)
+    private LocalDate loggedDate;
+
+    @ManyToOne
+    @JoinColumn(name = "queue_ticket_id", nullable = false)
+    private QueueTicket queueTicket;
 
     public ServiceLog() {
     }
 
-    public ServiceLog(QueueTicket queueTicket, LocalDateTime loggedAt, String notes) {
+    public ServiceLog(String actionTaken, String remarks, int minutesSpent, LocalDate loggedDate, QueueTicket queueTicket) {
+        this.actionTaken = actionTaken;
+        this.remarks = remarks;
+        this.minutesSpent = minutesSpent;
+        this.loggedDate = loggedDate;
         this.queueTicket = queueTicket;
-        this.loggedAt = loggedAt;
-        this.notes = notes;
     }
 
     public UUID getId() {
@@ -39,27 +47,43 @@ public class ServiceLog {
         this.id = id;
     }
 
+    public String getActionTaken() {
+        return actionTaken;
+    }
+
+    public void setActionTaken(String actionTaken) {
+        this.actionTaken = actionTaken;
+    }
+
+    public String getRemarks() {
+        return remarks;
+    }
+
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    public int getMinutesSpent() {
+        return minutesSpent;
+    }
+
+    public void setMinutesSpent(int minutesSpent) {
+        this.minutesSpent = minutesSpent;
+    }
+
+    public LocalDate getLoggedDate() {
+        return loggedDate;
+    }
+
+    public void setLoggedDate(LocalDate loggedDate) {
+        this.loggedDate = loggedDate;
+    }
+
     public QueueTicket getQueueTicket() {
         return queueTicket;
     }
 
     public void setQueueTicket(QueueTicket queueTicket) {
         this.queueTicket = queueTicket;
-    }
-
-    public LocalDateTime getLoggedAt() {
-        return loggedAt;
-    }
-
-    public void setLoggedAt(LocalDateTime loggedAt) {
-        this.loggedAt = loggedAt;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
     }
 }
