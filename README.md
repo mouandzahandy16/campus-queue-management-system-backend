@@ -69,7 +69,7 @@ Update `src/main/resources/application.properties` if needed:
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/campus_queue_db
 spring.datasource.username=postgres
-spring.datasource.password=postgres
+spring.datasource.password=postgres123
 ```
 
 ---
